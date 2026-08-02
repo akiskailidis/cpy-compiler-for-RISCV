@@ -4,7 +4,7 @@
 ![RISC-V](https://img.shields.io/badge/Target-RISC--V-283198?style=flat&logo=riscv&logoColor=white)
 ![University](https://img.shields.io/badge/University%20of%20Ioannina-Compilers%20Course-005baa?style=flat)
 
-A full compiler for **cpy**, a minimal educational programming language, translating `.cpy` source code directly into working **RISC-V assembly**. Built from scratch in Python — covering lexical analysis, parsing, semantic analysis, and code generation.
+A full compiler for **cpy**, a minimal educational programming language, translating `.cpy` source code directly into working **RISC-V assembly**. Built from scratch in Python using classical syntax-directed translation — lexical analysis, recursive-descent parsing with intermediate code generation, symbol table/scope management, and final code generation.
 
 Developed for the course *Μεταφραστές* (Compilers) at the University of Ioannina.
 
@@ -27,20 +27,33 @@ cpy is a small, structured, integer-only language designed for compiler-construc
 
 ## Compilation Pipeline
 
-The compiler is structured into four phases, covering the key stages of a standard compiler pipeline:
+The compiler follows a classical **syntax-directed translation** design rather than a separate parse-then-generate model — intermediate code is emitted directly as the parser recognizes each construct:
 
-1. **Lexical Analysis** — tokenizes raw `.cpy` source into a stream of recognized symbols
-2. **Syntax Analysis** — parses tokens into an abstract syntax tree (AST), enforcing cpy's grammar
-3. **Semantic Analysis** — checks scoping, variable declarations, and function usage for correctness
-4. **Code Generation** — walks the AST and emits RISC-V assembly instructions
+1. **Lexical Analysis** — tokenizes raw `.cpy` source into keywords, identifiers, numbers, operators, and delimiters
+2. **Syntax Analysis + Intermediate Code Generation** — a recursive-descent parser validates cpy's grammar and simultaneously emits intermediate code as quadruples (`op, arg1, arg2, result`), using **backpatching** to resolve jump targets for `if` / `elif` / `else` / `while`, including short-circuit evaluation of `and` / `or`
+3. **Symbol Table & Scope Management** — tracks nested function scopes, variable offsets, and stack-frame layout, supporting recursion and parameter passing
+4. **Final Code Generation** — translates the quadruple sequence into real RISC-V assembly instructions
+
+Running the compiler produces three output files: the symbol table (`.sym`), the intermediate quadruple code (`.int`), and the final RISC-V assembly (`.asm`).
+
+## cpy Syntax Notes
+
+cpy uses distinctive delimiters rather than standard braces:
+- Blocks are wrapped in `#{ ... #}` (functions, `if`, `while` bodies)
+- Variable declarations use `#int`
+- The program entry point is defined with `#def main: ... #}`
+- Comments are wrapped in `##...##`
 
 ## Usage
 
 ```bash
-python3 cpy_language_compiler.py test.cpy
+python cpy_language_compiler.py test.cpy
 ```
 
-This compiles `test.cpy` and outputs the corresponding RISC-V assembly, ready to run on a RISC-V simulator (e.g., RARS or Spike).
+This compiles `test.cpy` and generates three output files in the same directory:
+- `test.cpy.sym` — the symbol table
+- `test.cpy.int` — intermediate code (quadruples)
+- `test.cpy.asm` — the final RISC-V assembly, ready to run on a RISC-V simulator (e.g., RARS or Spike)
 
 ## Example
 
@@ -48,7 +61,7 @@ This compiles `test.cpy` and outputs the corresponding RISC-V assembly, ready to
 
 ## Tech Stack
 
-`Python` `RISC-V Assembly` `Compiler Design` `Lexical Analysis` `Parsing` `Code Generation`
+`Python` `RISC-V Assembly` `Compiler Design` `Syntax-Directed Translation` `Backpatching` `Symbol Table Management` `Lexical Analysis` `Recursive-Descent Parsing`
 
 ---
 
